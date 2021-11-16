@@ -6,9 +6,6 @@
 
 ## 保持winserver rdp connection
 ```bat
-%1 mshta vbscript:CreateObject("Shell.Application").ShellExecute("cmd.exe","/c %~s0 ::","","runas",1)(window.close)&&exit
-for /f "skip=1 tokens=3" %%s in ('query user %USERNAME%') do (
-%windir%\System32\tscon.exe %%s /dest:console
-)
+tscon %sessionname% /dest:console 
 ```
-As Admin
+在远程计算机中创建
