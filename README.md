@@ -11,7 +11,7 @@ pip install -r requirements -i https://pypi.douban.com/simple/
 4.运行 `flask run` 或 `py app.py`
 
 ## 调用方法
-`GET` `~/addItem?bv=BV号&p=分P数目(1,2,3)` 执行任务  
+`GET` `~/addItem?token=(optional)&bv=BV号&p=分P数目(1,2,3)` 执行任务  
 `GET` `~/download?name=BV号.srt` 下载生成的字幕  
 `GET` `~/` 查看服务器日志 
 `GET` `~/isAlive` 查看服务器运行状态  
