@@ -1,0 +1,4 @@
+requests
+flask
+contextlib
+pyautogui
