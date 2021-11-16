@@ -4,7 +4,7 @@
 ## 使用方法
 1.安装必要依赖
 ```bash
-pip install -r requirements -i https://pypi.douban.com/simple/
+pip install -r requirements.txt -i https://pypi.douban.com/simple/
 ```
 2.修改 `Server/config.json` 和 `Server/components/config.json` 中的文件  
 3.参照 `Server/componnets/position` 中的截图自行修改  
