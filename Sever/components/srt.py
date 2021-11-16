@@ -26,6 +26,17 @@ class GetSrt():
         self.theme = self.Config["theme"]
         self.parseSrt()
 
+    def is_in_used(self,path):
+        ret = False
+        try:
+            handle = open(path,"rb")
+            ret = False
+        except PermissionError:
+            ret = True
+        finally:
+            handle.close()
+        return ret
+
     def parseSrtPart(self,path)->bool:
         name = path.split(".")[0]
         print("start parsing srt for " + path)
@@ -89,13 +100,9 @@ class GetSrt():
         time.sleep(1)
         while True:
             #持续中
-            try:
-                with open(self.Config["draftContentPath"],"rb") as f:
-                    f.close()
-            except PermissionError:
-                time.sleep(2)
+            if self.is_in_used(self.Config["draftContentPath"]):
+                time.sleep(5)
                 break
-
 
         #3.字幕提取
         self.SrtMain((self.Config["draftContentPath"],name))
