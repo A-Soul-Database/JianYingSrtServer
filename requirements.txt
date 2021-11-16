@@ -1,3 +1,5 @@
 requests
 flask
 pyautogui
+Pillow
+opencv-python
