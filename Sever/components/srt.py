@@ -31,6 +31,17 @@ class GetSrt():
         self.theme = self.Config["theme"]
         self.parseSrt()
 
+    def is_in_used(self,path):
+        ret = False
+        try:
+            handle = open(path,"rb")
+            ret = False
+        except PermissionError:
+            ret = True
+        finally:
+            handle.close()
+        return ret
+
     def parseSrtPart(self,path)->bool:
         #解析单个字幕
         name = path.split(".")[0]
@@ -100,10 +111,18 @@ class GetSrt():
         except:
             logging.error("error in start parsing srt")
             return False
+<<<<<<< HEAD
         time.sleep(1*self.Config["delay_times"])
         mtime = time.ctime(os.path.getmtime(self.Config["draftContentPath"]))
         self.Srt_Rolling(mtime)
-
+=======
+        time.sleep(1)
+        while True:
+            #持续中
+            if self.is_in_used(self.Config["draftContentPath"]):
+                time.sleep(5)
+                break
+>>>>>>> 02a8602cf7d6e5e5ea0701b5d21b43bad768989c
 
         #3.字幕提取
         self.SrtMain((self.Config["draftContentPath"],name))
