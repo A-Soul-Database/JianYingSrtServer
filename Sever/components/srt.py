@@ -32,6 +32,7 @@ class GetSrt():
         self.parseSrt()
 
     def parseSrtPart(self,path)->bool:
+        #解析单个字幕
         name = path.split(".")[0]
         print("start parsing srt for " + path)
         #1.导入素材
@@ -39,6 +40,14 @@ class GetSrt():
             x,y,width,height = gui.locateOnScreen("components/position/add.png",confidence=self.confidence)
             gui.click(x+width/2,y+height/2)
         except:
+            #有可能是被ForeceKill,先尝试移除文件,之后清除缓存
+            x,y,width,height = gui.locateOnScreen("components/position/add_small.png",confidence=self.confidence)
+            gui.click(x+(width/2)*3,y+height/2)
+            time.sleep(1*self.Config["delay_times"])
+            gui.press("backspace")
+            time.sleep(1*self.Config["delay_times"])
+            x,y,width,height = gui.locateOnScreen("components/position/confirm.png",confidence=self.confidence)
+            gui.click(x+width/4,y+height*6/7)
             logging.error("error in finding add button!")
             return False
             #选择媒体资源
@@ -121,7 +130,6 @@ class GetSrt():
             gui.press('a')
         time.sleep(0.5*self.Config["delay_times"])
         gui.press('backspace')
-
         try:
             pass
         except:
@@ -131,6 +139,7 @@ class GetSrt():
         return True
 
     def parseSrt(self):
+        #解析字幕(Main)
         self.to_m4a(self.videoList,self.AbsPath)
         for i in self.audioList:
             result = self.parseSrtPart(i)
@@ -140,12 +149,10 @@ class GetSrt():
                 break
             else:
                 print(f"{i} is done")
-        status = gl.get("Status")
-        AllStatus = gl.get("AllStatus")
-        status["status"] = "done"
-        AllStatus.append(status)
-        gl.set("AllStatus",AllStatus)
         print(f"finished:  {self.FinishedList}")
+        all = gl.get('Status')
+        all[gl.get('bv')]["status"] = "done"
+        gl.set('Status',all)
         self.ClearTmp()
 
     def SrtMain(self,args):
@@ -158,6 +165,7 @@ class GetSrt():
             
 
     def ClearTmp(self):
+        #清空临时文件
         os.system('%s%s' % ("taskkill /F /IM ","JianYingPro.exe"))
         time.sleep(1*self.Config["delay_times"])
         for i in self.videoList+self.audioList:
@@ -170,6 +178,7 @@ class GetSrt():
         gui.click(x+width/2,y+height/2+100)
 
     def Srt_Rolling(self,mtime)->bool:
+        #通过检测上次修改时间来判断是否识别完成
         if time.ctime(os.path.getmtime(self.Config["draftContentPath"])) != mtime:
             return True
         else:
@@ -177,6 +186,7 @@ class GetSrt():
             self.Srt_Rolling(mtime)
 
     def to_m4a(self,filelist:list,path:str):
+        #利用ffmpeg将视频转换为m4a音频文件
         for file in filelist:
             command =  f"ffmpeg -i {path}/{file} -vn -codec copy {path}/{file.split('.')[0]}.m4a"
             os.system(command)

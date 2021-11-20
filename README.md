@@ -9,3 +9,8 @@
 tscon %sessionname% /dest:console 
 ```
 在远程计算机中创建
+
+# License
+GPL-V3.0
+# Libirary
+[Jianying-to-srt](https://github.com/YDX-2147483647/Jianying-to-srt) MIT License

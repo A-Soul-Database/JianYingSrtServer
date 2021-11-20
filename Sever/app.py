@@ -15,22 +15,25 @@ sys.path.append("./components")
 config = json.loads(open("./config.json","r",encoding="utf-8").read())
 
 Status = {}
-AllStatus = []
+bv = ""
 
 
 gl.__init__()
 gl.set("Status",Status)
-gl.set("AllStatus",AllStatus)
+gl.set("bv",bv)
 
 app = Flask(__name__)
 
 logging.basicConfig(filename='app.log', level=logging.INFO)
 
 def getBvs(bv,p)->list:
-    if len(p) == 1:
+    #格式化bv和p的文件名
+    if p == "1":
         return [bv+".srt"]
     else:
         returning = []
+        if type(p) == str:
+            return [p]
         for i in p:
             returning.append(bv+"-"+i[0]+".srt")
         return returning
@@ -38,33 +41,36 @@ def getBvs(bv,p)->list:
 @app.route('/',methods = ['GET'])
 def give_stastic():
     #访问主页会查看队列,即Status
-    return render_template('index.html',status=str(AllStatus)),200
+    return render_template('index.html',status=str(Status)),200
 
 
 @app.route('/addItem',methods=["GET"])
 def addItem():
     #添加视频字幕
+    if len(request.args) == 0:
+        return 'error request' , 403
     logging.info('get /addItem',request.args)
     if request.args.get('token') == None:
         pass
     elif request.args.get('token') != config["token"]:
         return "token error", 403
     bv = request.args.get('bv')
+    gl.set("bv",bv)
     if request.args.get('p') == None:
-        p = ["1"]
+        p = "1"
     p = [request.args.get('p')] if request.args.get('p').isnumeric() else request.args.get('p').split(',')
     #更改分P使其符合规则
-    Status={"bv":bv,"p":p,"status":"pending"}
+    Status[bv]={"bv":bv,"p":p,"status":"pending"}
     gl.set("Status",Status)
     t = Thread(target=video_Down.down,args=(bv,p))
     t.start()
-    Status["status"] = "Working"
+    Status[bv]["status"] = "Working"
     gl.set("Status",Status)
     #后台处理文件
     link = ""
     for i in getBvs(bv,p):
         link += f"<a href='/download?name={i}'>{i}</a><br>"
-    return f"Task Added to list </br> please Check </br> {link} </br> <b>later.</b> <p>Found Log in logger/{bv}",200
+    return f"Task Added to list </br> please Check </br> {link} </br> <b>later.</b>",200
 
 @app.route('/download',methods=['GET'] )
 def getSrt():
