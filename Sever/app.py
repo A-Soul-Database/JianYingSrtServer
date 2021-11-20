@@ -5,6 +5,7 @@ import logging
 import json
 from threading import Thread
 import components.video_Down as video_Down
+import components.srt as srt
 import components.srtParser.draft_content as draft_content
 import components.srtParser.simple_srt as simple_srt
 import sys
@@ -15,6 +16,7 @@ config = json.loads(open("./config.json","r",encoding="utf-8").read())
 
 Status = {}
 AllStatus = []
+
 
 gl.__init__()
 gl.set("Status",Status)
@@ -76,9 +78,16 @@ def getSrt():
         return "File Not Found",404
 
 
-@app.route('/isAlive',methods=['GET'])
+@app.route('/ping',methods=['GET'])
 def Alive():
-    return "ok",200
+    return "pong",200
+
+@app.route('/forceKill',methods=['GET'])
+def forceKill():
+    t = Thread(target=srt.GetSrt().ClearTmp)
+    t.start()
+    return "Ok",200
+
 
 if __name__ == "__main__":
     app.run(port=config["port"],debug=config["debug"])

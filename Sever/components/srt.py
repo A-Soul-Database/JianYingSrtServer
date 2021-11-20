@@ -3,6 +3,7 @@ from flask import config
 import pyautogui as gui
 import logging
 import sys
+from threading import Timer
 import components.srtParser.draft_content as draft_content
 import components.srtParser.simple_srt as simple_srt
 import components.global_var as gl
@@ -19,8 +20,12 @@ class GetSrt():
         #获取视频列表
         self.AbsPath = os.path.abspath(os.getcwd()+"/components/"+self.Config["videoDir"])
         videoFormat = ["mp4","flv"]
+        audioFormat = ["m4a"]
         self.videoList = [fn for fn in os.listdir(self.AbsPath)
          if any(fn.endswith(formats) for formats in videoFormat)
+        ]
+        self.audioList = [fn for fn in os.listdir(self.AbsPath)
+         if any(fn.endswith(formats) for formats in audioFormat)
         ]
         self.confidence = self.Config["confidence"]
         self.theme = self.Config["theme"]
@@ -38,12 +43,12 @@ class GetSrt():
             return False
             #选择媒体资源
             #路径框识别
-        time.sleep(2)
+        time.sleep(2*self.Config["delay_times"])
         try:
             x,y,width,height = gui.locateOnScreen("components/position/PathBar_"+self.theme+".png",confidence=self.confidence)
             gui.click(x+width/2,y+height/2)
             gui.typewrite(self.AbsPath)
-            time.sleep(3)
+            time.sleep(3*self.Config["delay_times"])
             #Windows11 好像有点不一样
             gui.press("enter")
                 #文件名框选择
@@ -53,7 +58,7 @@ class GetSrt():
                 #打开按钮
             x,y,width,height = gui.locateOnScreen(f"components/position/Open_{self.theme}.png",confidence=self.confidence)
             gui.click(x+width/2,y+height/2)
-            time.sleep(2)
+            time.sleep(2*self.Config["delay_times"])
         except:
             logging.error(f"error in selecting files,please check system {self.theme} Dark/Light , filepath")
             return False
@@ -73,11 +78,11 @@ class GetSrt():
             x,y,width,height = gui.locateOnScreen("components/position/text.png",confidence=self.confidence)
             gui.click(x+width/2,y+height/2)
                 #智能字幕
-            time.sleep(1)
+            time.sleep(1*self.Config["delay_times"])
             x,y,width,height = gui.locateOnScreen("components/position/AutoSrt.png",confidence=self.confidence)
             gui.click(x+width/2,y+height/2)
                 #清空已有字幕
-            time.sleep(0.5)
+            time.sleep(0.5*self.Config["delay_times"])
             x,y,width,height = gui.locateOnScreen("components/position/ClearSrts.png",confidence=self.confidence)
             gui.click(x+width/2,y+height/2)
                 #开始识别
@@ -86,15 +91,9 @@ class GetSrt():
         except:
             logging.error("error in start parsing srt")
             return False
-        time.sleep(1)
-        while True:
-            #持续中
-            try:
-                with open(self.Config["draftContentPath"],"rb") as f:
-                    f.close()
-            except PermissionError:
-                time.sleep(2)
-                break
+        time.sleep(1*self.Config["delay_times"])
+        mtime = time.ctime(os.path.getmtime(self.Config["draftContentPath"]))
+        self.Srt_Rolling(mtime)
 
 
         #3.字幕提取
@@ -102,19 +101,27 @@ class GetSrt():
             #点击“媒体”  
         
         
-        time.sleep(3)
+        time.sleep(3*self.Config["delay_times"])
         x,y,width,height = gui.locateOnScreen("components/position/media.png",confidence=self.confidence)
         gui.click(x+width/2,y+height/2)
         #4.移除媒体文件
-        time.sleep(1)
+        time.sleep(1*self.Config["delay_times"])
         x,y,width,height = gui.locateOnScreen("components/position/add_small.png",confidence=self.confidence)
         gui.click(x+(width/2)*3,y+height/2)
-        time.sleep(1)
+        time.sleep(1*self.Config["delay_times"])
         gui.press("backspace")
-        time.sleep(1)
+        time.sleep(1*self.Config["delay_times"])
         x,y,width,height = gui.locateOnScreen("components/position/confirm.png",confidence=self.confidence)
-            
         gui.click(x+width/4,y+height*6/7)
+
+        #移除音频字幕
+        x,y,width,height = gui.locateOnScreen("components/position/sound.png",confidence=self.confidence)
+        gui.click(x,y)
+        with gui.hold('ctrl'):
+            gui.press('a')
+        time.sleep(0.5*self.Config["delay_times"])
+        gui.press('backspace')
+
         try:
             pass
         except:
@@ -124,7 +131,8 @@ class GetSrt():
         return True
 
     def parseSrt(self):
-        for i in self.videoList:
+        self.to_m4a(self.videoList,self.AbsPath)
+        for i in self.audioList:
             result = self.parseSrtPart(i)
             time.sleep(2)
             if result != True:
@@ -151,15 +159,27 @@ class GetSrt():
 
     def ClearTmp(self):
         os.system('%s%s' % ("taskkill /F /IM ","JianYingPro.exe"))
-        time.sleep(1)
-        for i in self.videoList:
+        time.sleep(1*self.Config["delay_times"])
+        for i in self.videoList+self.audioList:
             print(self.AbsPath+'/'+i)
             os.remove(self.AbsPath+'/'+i)
         logging.info("clear tmp files")
         os.system(self.Config["jianyingPath"])
-        time.sleep(5)
+        time.sleep(5*self.Config["delay_times"])
         x,y,width,height = gui.locateOnScreen("components/position/draftcontents.png",confidence=self.confidence)
         gui.click(x+width/2,y+height/2+100)
+
+    def Srt_Rolling(self,mtime)->bool:
+        if time.ctime(os.path.getmtime(self.Config["draftContentPath"])) != mtime:
+            return True
+        else:
+            time.sleep(1)
+            self.Srt_Rolling(mtime)
+
+    def to_m4a(self,filelist:list,path:str):
+        for file in filelist:
+            command =  f"ffmpeg -i {path}/{file} -vn -codec copy {path}/{file.split('.')[0]}.m4a"
+            os.system(command)
 
 if __name__ == "__main__":
     from srtParser import draft_content as draft_content
