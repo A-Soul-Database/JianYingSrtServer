@@ -8,7 +8,7 @@
 ```bash
 pip install -r requirements.txt -i https://pypi.douban.com/simple/
 ```
-安装ffmpeg
+安装ffmpeg  
 2.修改 `Server/config.json` 和 `Server/components/config.json` 中的文件  
 3.参照 `Server/componnets/position` 中的截图自行修改  
 4.运行 `flask run` 或 `py app.py`
