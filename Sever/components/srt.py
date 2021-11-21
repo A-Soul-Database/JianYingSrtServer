@@ -12,6 +12,7 @@ class GetSrt():
 
     Config = {}
     videoList = []
+    audioList = []
     FinishedList = []
 
     def __init__(self):
@@ -20,16 +21,14 @@ class GetSrt():
         #获取视频列表
         self.AbsPath = os.path.abspath(os.getcwd()+"/components/"+self.Config["videoDir"])
         videoFormat = ["mp4","flv"]
-        audioFormat = ["m4a"]
         self.videoList = [fn for fn in os.listdir(self.AbsPath)
          if any(fn.endswith(formats) for formats in videoFormat)
         ]
         self.audioList = [fn for fn in os.listdir(self.AbsPath)
-         if any(fn.endswith(formats) for formats in audioFormat)
+         if any(fn.endswith(formats) for formats in ['m4a'])
         ]
         self.confidence = self.Config["confidence"]
         self.theme = self.Config["theme"]
-        self.parseSrt()
 
     def is_in_used(self,path):
         ret = False
@@ -53,7 +52,7 @@ class GetSrt():
         except:
             #有可能是被ForeceKill,先尝试移除文件,之后清除缓存
             x,y,width,height = gui.locateOnScreen("components/position/add_small.png",confidence=self.confidence)
-            gui.click(x+(width/2)*3,y+height/2)
+            gui.click(x+width,y+height*10)
             time.sleep(1*self.Config["delay_times"])
             gui.press("backspace")
             time.sleep(1*self.Config["delay_times"])
@@ -85,9 +84,11 @@ class GetSrt():
             #选择第一个媒体元素
         try:
             x,y,width,height = gui.locateOnScreen("components/position/add_small.png",confidence=self.confidence)
-            gui.moveTo(x+(width/2)*3,y+height/2)
+            gui.moveTo(x+width,y+height*10)
                 #拖拽到空轨道
             x,y,width,height = gui.locateOnScreen("components/position/empty_Track.png",confidence=self.confidence)
+            self.empty_track_x = x+width/2
+            self.empty_track_y = y+height/2
             gui.dragTo(x+width/2,y+height/2,button="left",duration=0.4)
         except:
             logging.error("error in drag media into tracks")
@@ -111,18 +112,9 @@ class GetSrt():
         except:
             logging.error("error in start parsing srt")
             return False
-<<<<<<< HEAD
         time.sleep(1*self.Config["delay_times"])
         mtime = time.ctime(os.path.getmtime(self.Config["draftContentPath"]))
         self.Srt_Rolling(mtime)
-=======
-        time.sleep(1)
-        while True:
-            #持续中
-            if self.is_in_used(self.Config["draftContentPath"]):
-                time.sleep(5)
-                break
->>>>>>> 02a8602cf7d6e5e5ea0701b5d21b43bad768989c
 
         #3.字幕提取
         self.SrtMain((self.Config["draftContentPath"],name))
@@ -135,7 +127,7 @@ class GetSrt():
         #4.移除媒体文件
         time.sleep(1*self.Config["delay_times"])
         x,y,width,height = gui.locateOnScreen("components/position/add_small.png",confidence=self.confidence)
-        gui.click(x+(width/2)*3,y+height/2)
+        gui.click(x+width,y+height*10)
         time.sleep(1*self.Config["delay_times"])
         gui.press("backspace")
         time.sleep(1*self.Config["delay_times"])
@@ -143,8 +135,7 @@ class GetSrt():
         gui.click(x+width/4,y+height*6/7)
 
         #移除音频字幕
-        x,y,width,height = gui.locateOnScreen("components/position/sound.png",confidence=self.confidence)
-        gui.click(x,y)
+        gui.click(self.empty_track_x,self.empty_track_y)
         with gui.hold('ctrl'):
             gui.press('a')
         time.sleep(0.5*self.Config["delay_times"])
@@ -160,17 +151,21 @@ class GetSrt():
     def parseSrt(self):
         #解析字幕(Main)
         self.to_m4a(self.videoList,self.AbsPath)
+        self.audioList = [fn for fn in os.listdir(self.AbsPath)
+         if any(fn.endswith(formats) for formats in ['m4a'])
+        ]
+        all = gl.get('Status')
         for i in self.audioList:
             result = self.parseSrtPart(i)
             time.sleep(2)
             if result != True:
                 logging.error(f"error in handeling video {i}")
+                all[gl.get('bv')]["status"] = "error"
                 break
             else:
+                all[gl.get('bv')]["status"] = "done"
                 print(f"{i} is done")
         print(f"finished:  {self.FinishedList}")
-        all = gl.get('Status')
-        all[gl.get('bv')]["status"] = "done"
         gl.set('Status',all)
         self.ClearTmp()
 
@@ -182,20 +177,6 @@ class GetSrt():
         with open("components/tmp/"+name+".srt", 'w', encoding='utf-8') as f:
             f.write(simple_srt.tracks_to_srt_string(tracks))
             
-
-    def ClearTmp(self):
-        #清空临时文件
-        os.system('%s%s' % ("taskkill /F /IM ","JianYingPro.exe"))
-        time.sleep(1*self.Config["delay_times"])
-        for i in self.videoList+self.audioList:
-            print(self.AbsPath+'/'+i)
-            os.remove(self.AbsPath+'/'+i)
-        logging.info("clear tmp files")
-        os.system(self.Config["jianyingPath"])
-        time.sleep(5*self.Config["delay_times"])
-        x,y,width,height = gui.locateOnScreen("components/position/draftcontents.png",confidence=self.confidence)
-        gui.click(x+width/2,y+height/2+100)
-
     def Srt_Rolling(self,mtime)->bool:
         #通过检测上次修改时间来判断是否识别完成
         if time.ctime(os.path.getmtime(self.Config["draftContentPath"])) != mtime:
@@ -207,8 +188,20 @@ class GetSrt():
     def to_m4a(self,filelist:list,path:str):
         #利用ffmpeg将视频转换为m4a音频文件
         for file in filelist:
-            command =  f"ffmpeg -i {path}/{file} -vn -codec copy {path}/{file.split('.')[0]}.m4a"
+            command =  f"ffmpeg -i {path}/{file} -vn -codec copy {path}/{file.split('.')[0]}.m4a -y"
             os.system(command)
+
+    def ClearTmp(self):
+        #清空临时文件
+        os.system('%s%s' % ("taskkill /F /IM ","JianYingPro.exe"))
+        time.sleep(1*self.Config["delay_times"])
+        for i in self.videoList+self.audioList:
+            os.remove(self.AbsPath+'/'+i)
+        logging.info("clear tmp files")
+        os.system(self.Config["jianyingPath"])
+        time.sleep(5*self.Config["delay_times"])
+        x,y,width,height = gui.locateOnScreen("components/position/draftcontents.png",confidence=self.confidence)
+        gui.click(x+width/2,y+height/2+100)
 
 if __name__ == "__main__":
     from srtParser import draft_content as draft_content

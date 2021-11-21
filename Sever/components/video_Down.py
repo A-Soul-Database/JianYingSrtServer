@@ -64,7 +64,7 @@ class down:
             Video_Name = f"{name}.{formats}"
             result = self.Download(Video_Durl,Video_Name)
             time.sleep(1)
-        srt.GetSrt()
+        srt.GetSrt().parseSrt()
         return result
 
 

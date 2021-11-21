@@ -26,17 +26,12 @@ app = Flask(__name__)
 
 logging.basicConfig(filename='app.log', level=logging.INFO)
 
-def getBvs(bv,p)->list:
+def getBvs(bv,p:list)->list:
     #格式化bv和p的文件名
-    if p == "1":
+    if p == ["1"]:
         return [bv+".srt"]
     else:
-        returning = []
-        if type(p) == str:
-            return [p]
-        for i in p:
-            returning.append(bv+"-"+i[0]+".srt")
-        return returning
+        return [bv+"-"+i+".srt" for i in p]
 
 @app.route('/',methods = ['GET'])
 def give_stastic():
@@ -47,9 +42,9 @@ def give_stastic():
 @app.route('/addItem',methods=["GET"])
 def addItem():
     #添加视频字幕
+    logging.info('get /addItem',request.args)
     if len(request.args) == 0:
         return 'error request' , 403
-    logging.info('get /addItem',request.args)
     if request.args.get('token') == None:
         pass
     elif request.args.get('token') != config["token"]:
@@ -59,6 +54,7 @@ def addItem():
     if request.args.get('p') == None:
         p = "1"
     p = [request.args.get('p')] if request.args.get('p').isnumeric() else request.args.get('p').split(',')
+    #如果P的请求是 1 则为 ["1"] , 若为 1,2 则为["1","2"] 返回值为list
     #更改分P使其符合规则
     Status[bv]={"bv":bv,"p":p,"status":"pending"}
     gl.set("Status",Status)
