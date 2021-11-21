@@ -17,7 +17,7 @@ pip install -r requirements.txt -i https://pypi.douban.com/simple/
 `GET` `~/addItem?token=(optional)&bv=BV号&p=分P数目(1,2,3)` 执行任务  
 `GET` `~/download?name=BV号.srt` 下载生成的字幕  
 `GET` `~/` 查看服务器日志 
-`GET` `~/isAlive` 查看服务器运行状态  
+`GET` `~/ping` 查看服务器运行状态  
 
 ## Mind Map
 ![Whiteboard.png](https://i.loli.net/2021/11/13/JFBts3m6cOlZIqN.png)
