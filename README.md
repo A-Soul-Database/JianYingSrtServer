@@ -20,6 +20,7 @@ pip install -r requirements.txt -i https://pypi.douban.com/simple/
 `GET` `~/ping` 查看服务器运行状态    
 `GET` `~/forceKill` 强制清除缓存并重启剪映客户端(这并不会清除剪映缓存和srt文件,仅用于清理下载的视频和转换的音频)
 
+
 ## Mind Map
 ![Whiteboard.png](https://i.loli.net/2021/11/13/JFBts3m6cOlZIqN.png)
 
@@ -28,6 +29,9 @@ pip install -r requirements.txt -i https://pypi.douban.com/simple/
 tscon %sessionname% /dest:console 
 ```
 在远程计算机中创建
+
+#### ToDo
+[&multiplle=[["bv1",["p1","p2"]],["bv2",["p3","p4"]]](多选部署)]
 
 # License
 GPL-V3.0
