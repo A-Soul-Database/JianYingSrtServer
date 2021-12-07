@@ -175,7 +175,7 @@ class GetSrt():
     def to_m4a(self,filelist:list,path:str):
         #利用ffmpeg将视频转换为m4a音频文件
         for file in filelist:
-            command =  f"ffmpeg -i {path}/{file} -vn -codec copy {path}/{file.split('.')[0]}.m4a -y"
+            command =  f"ffmpeg -y -i {path}/{file} -vn -codec copy {path}/{file.split('.')[0]}.m4a"
             os.system(command)
 
     def ClearTmp(self):
