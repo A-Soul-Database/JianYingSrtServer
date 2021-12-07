@@ -1,8 +1,8 @@
 {
-    "jianyingPath":"xxxx\\JianyingPro.exe",
-    "draftContentPath":"xxxx\\draft_content.json",
+    "jianyingPath":"xxx\\JianyingPro.exe",
+    "draftContentPath":"xxx\\draft_content.json",
     "videoDir":"/tmp",
-    "theme":"light",
+    "theme":"dark",
     "confidence":0.6,
     "delay_times":1
 }

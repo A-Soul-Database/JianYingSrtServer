@@ -9,6 +9,7 @@ import components.srt as srt
 import components.srtParser.draft_content as draft_content
 import components.srtParser.simple_srt as simple_srt
 import sys
+import os
 import components.global_var as gl
 sys.path.append("..")
 sys.path.append("./components")
@@ -42,7 +43,6 @@ def give_stastic():
 @app.route('/addItem',methods=["GET"])
 def addItem():
     #添加视频字幕
-    logging.info('get /addItem',request.args)
     if len(request.args) == 0:
         return 'error request' , 403
     if request.args.get('token') == None:
@@ -53,7 +53,9 @@ def addItem():
     gl.set("bv",bv)
     if request.args.get('p') == None:
         p = "1"
-    p = [request.args.get('p')] if request.args.get('p').isnumeric() else request.args.get('p').split(',')
+    else:
+        p = request.args.get('p') 
+    p = [p] if p.isnumeric() else p.split(',')
     #如果P的请求是 1 则为 ["1"] , 若为 1,2 则为["1","2"] 返回值为list
     #更改分P使其符合规则
     Status[bv]={"bv":bv,"p":p,"status":"pending"}
@@ -63,14 +65,15 @@ def addItem():
     Status[bv]["status"] = "Working"
     gl.set("Status",Status)
     #后台处理文件
-    link = ""
+    link = []
     for i in getBvs(bv,p):
-        link += f"<a href='/download?name={i}'>{i}</a><br>"
-    return f"Task Added to list </br> please Check </br> {link} </br> <b>later.</b>",200
+        #link += f"<a href='/download?name={i}'>{i}</a><br>"
+        link.append(i)
+    #return f"Task Added to list </br> please Check </br> {link} </br> <b>later.</b>",200
+    return json.dumps(link,ensure_ascii=False),200
 
 @app.route('/download',methods=['GET'] )
 def getSrt():
-    logging.info('get /download',request.args)
     if request.args.get('name')==None:
         return "Name is None",403
     name = request.args.get('name')
@@ -79,10 +82,10 @@ def getSrt():
     except FileNotFoundError:
         return "File Not Found",404
 
-
-@app.route('/ping',methods=['GET'])
-def Alive():
-    return "pong",200
+@app.route('/all',methods=['GET'])
+def getAllSrt():
+    srtlists = [fn for fn in os.listdir("components/tmp") if fn.endswith(".srt")]
+    return json.dumps(srtlists,ensure_ascii=False),200
 
 @app.route('/forceKill',methods=['GET'])
 def forceKill():

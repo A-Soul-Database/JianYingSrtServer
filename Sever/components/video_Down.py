@@ -14,8 +14,9 @@ qn{
 import requests
 from contextlib import closing
 import logging
-from . import srt
 import time
+import os
+import components.srt as srt
 class down:
 
     headers = {
@@ -23,32 +24,36 @@ class down:
         "Referer":"https://www.bilibili.com/",
     }
 
-    def __init__(self,bv:str,p:list=["1"],qn:str="16",path:str="") -> None:
+    def __init__(self,bv:str,p:list=[],qn:str="16",path:str="") -> None:
         self.bv = bv
         self.p = p
         self.qn = qn
         self.path = path
         self.Video_Download(self.Get_Info())
+        srt.GetSrt().parseSrt()
 
     def Get_Info(self)->dict:
         Bili_Video_Info_Api = f"https://api.bilibili.com/x/web-interface/view?bvid={self.bv}"
         Bili_Video_Info_Json = requests.get(Bili_Video_Info_Api,headers=self.headers).json()
 
-        if len(Bili_Video_Info_Json["data"]["pages"]) < len(self.p):
-            print("请求的分P数大于视频分P数,下载全部分P")
+        if len(Bili_Video_Info_Json["data"]["pages"]) < len(self.p) or len(self.p)==0:
+            #print("请求的分P数大于视频分P数或未指定分P,下载全部分P")
             self.p = [str(i) for i in range(1,len(Bili_Video_Info_Json["data"]["pages"])+1)]
-
+        
         infos = {
             "bv":self.bv,
             "cover":Bili_Video_Info_Json["data"]["pic"],
             "title":Bili_Video_Info_Json["data"]["title"],
             "p":[],
         }
-
-        for i in self.p:
-            #循环获得每个分P的信息格式 ["分P","Cid","名字(P1 录播/p2 录播【弹幕】)"]
-            infos["p"].append([ self.p, Bili_Video_Info_Json["data"]["pages"][int(i)-1]["cid"], Bili_Video_Info_Json["data"]["pages"][int(i)-1]["part"] ])
-
+        rolling = self.p[:]
+        for i in rolling:
+            #循环获得每个分P的信息格式 ["分P","Cid","名字(P1 录播/)"]
+            if "弹幕" in Bili_Video_Info_Json["data"]["pages"][int(i)-1]["part"]:
+                self.p.remove(i)
+            else:
+                infos["p"].append([i, Bili_Video_Info_Json["data"]["pages"][int(i)-1]["cid"], Bili_Video_Info_Json["data"]["pages"][int(i)-1]["part"] ])
+            #Asdb 特有:去除带有 【弹幕】 的所有分P
         return infos
 
 
@@ -56,15 +61,17 @@ class down:
     def Video_Download(self,infos:dict)->bool:
         result = False
         formats = "mp4" if self.qn == "16" else "flv"
+        p = 1
         for i in range(len(infos["p"])):
             url = f"https://api.bilibili.com/x/player/playurl?bvid={infos['bv']}&cid={infos['p'][i][1]}&qn={self.qn}&otype=json"
             Video_Info_Json = requests.get(url,headers=self.headers).json()
             Video_Durl = Video_Info_Json["data"]["durl"][0]["url"]
-            name = infos["bv"] if len(infos["p"]) == 1 else f"{infos['bv']}-{infos['p'][i][0][i]}"
+            name = infos["bv"] if len(infos["p"]) == 1 else f"{infos['bv']}-{str(p)}"
+            p+=1
             Video_Name = f"{name}.{formats}"
+            #print(Video_Name)
             result = self.Download(Video_Durl,Video_Name)
-            time.sleep(1)
-        srt.GetSrt().parseSrt()
+            
         return result
 
 
@@ -72,16 +79,8 @@ class down:
     def Download(self,url,name)->bool:
         with closing(requests.session().get(url,headers=self.headers,stream=True)) as response:
             chunk_size = 1024
-            content_size = int(response.headers['content-length'])
-            data_count = 0
             with open(f"components/tmp/{self.path}{name}", "wb") as file:
                 for data in response.iter_content(chunk_size=chunk_size):
                     file.write(data)
-                    data_count = data_count + len(data)
-                    now_jd = (data_count/content_size) * 100
-                    print("\r" + "下载进度：%d%%(%d/%d)" % (now_jd, data_count, content_size), end="")
+            print(f"{name} 下载完成")
         return True
-
-
-if __name__ == "__main__":
-    down("BV1wT4y1R7mf",["1","2"])

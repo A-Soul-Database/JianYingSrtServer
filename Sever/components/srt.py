@@ -58,60 +58,47 @@ class GetSrt():
             time.sleep(1*self.Config["delay_times"])
             x,y,width,height = gui.locateOnScreen("components/position/confirm.png",confidence=self.confidence)
             gui.click(x+width/4,y+height*6/7)
-            logging.error("error in finding add button!")
-            return False
             #选择媒体资源
             #路径框识别
         time.sleep(2*self.Config["delay_times"])
-        try:
-            x,y,width,height = gui.locateOnScreen("components/position/PathBar_"+self.theme+".png",confidence=self.confidence)
-            gui.click(x+width/2,y+height/2)
-            gui.typewrite(self.AbsPath)
-            time.sleep(3*self.Config["delay_times"])
+        x,y,width,height = gui.locateOnScreen("components/position/PathBar_"+self.theme+".png",confidence=self.confidence)
+        gui.click(x+width/2,y+height/2)
+        gui.typewrite(self.AbsPath)
+        time.sleep(3*self.Config["delay_times"])
             #Windows11 好像有点不一样
-            gui.press("enter")
+        gui.press("enter")
                 #文件名框选择
-            x,y,width,height = gui.locateOnScreen("components/position/FileName_"+self.theme+".png",confidence=self.confidence)
-            gui.click(x+width/2+50,y+height/2)
-            gui.typewrite(path)
+        x,y,width,height = gui.locateOnScreen("components/position/FileName_"+self.theme+".png",confidence=self.confidence)
+        gui.click(x+width/2+50,y+height/2)
+        gui.typewrite(path)
                 #打开按钮
-            x,y,width,height = gui.locateOnScreen(f"components/position/Open_{self.theme}.png",confidence=self.confidence)
-            gui.click(x+width/2,y+height/2)
-            time.sleep(2*self.Config["delay_times"])
-        except:
-            logging.error(f"error in selecting files,please check system {self.theme} Dark/Light , filepath")
-            return False
-            #选择第一个媒体元素
-        try:
-            x,y,width,height = gui.locateOnScreen("components/position/add_small.png",confidence=self.confidence)
-            gui.moveTo(x+width,y+height*10)
+        x,y,width,height = gui.locateOnScreen(f"components/position/Open_{self.theme}.png",confidence=self.confidence)
+        gui.click(x+width/2,y+height/2)
+        time.sleep(2*self.Config["delay_times"])
+        x,y,width,height = gui.locateOnScreen("components/position/add_small.png",confidence=self.confidence)
+        gui.moveTo(x+width,y+height*10)
                 #拖拽到空轨道
-            x,y,width,height = gui.locateOnScreen("components/position/empty_Track.png",confidence=self.confidence)
-            self.empty_track_x = x+width/2
-            self.empty_track_y = y+height/2
-            gui.dragTo(x+width/2,y+height/2,button="left",duration=0.4)
-        except:
-            logging.error("error in drag media into tracks")
-            return False
+        x,y,width,height = gui.locateOnScreen("components/position/empty_Track.png",confidence=self.confidence)
+        self.empty_track_x = x+width/2
+        self.empty_track_y = y+height/2
+        gui.dragTo(x+width/2,y+height/2,button="left",duration=0.4)
+
         #2.字幕识别
             #文本按钮
-        try:
-            x,y,width,height = gui.locateOnScreen("components/position/text.png",confidence=self.confidence)
-            gui.click(x+width/2,y+height/2)
+        x,y,width,height = gui.locateOnScreen("components/position/text.png",confidence=self.confidence)
+        gui.click(x+width/2,y+height/2)
                 #智能字幕
-            time.sleep(1*self.Config["delay_times"])
-            x,y,width,height = gui.locateOnScreen("components/position/AutoSrt.png",confidence=self.confidence)
-            gui.click(x+width/2,y+height/2)
+        time.sleep(1*self.Config["delay_times"])
+        x,y,width,height = gui.locateOnScreen("components/position/AutoSrt.png",confidence=self.confidence)
+        gui.click(x+width/2,y+height/2)
                 #清空已有字幕
-            time.sleep(0.5*self.Config["delay_times"])
-            x,y,width,height = gui.locateOnScreen("components/position/ClearSrts.png",confidence=self.confidence)
-            gui.click(x+width/2,y+height/2)
+        time.sleep(0.5*self.Config["delay_times"])
+        x,y,width,height = gui.locateOnScreen("components/position/ClearSrts.png",confidence=self.confidence)
+        gui.click(x+width/2,y+height/2)
                 #开始识别
-            x,y,width,height = gui.locateOnScreen("components/position/srt.png",confidence=self.confidence)
-            gui.click(x+width/2,y+height*6/7)
-        except:
-            logging.error("error in start parsing srt")
-            return False
+        x,y,width,height = gui.locateOnScreen("components/position/srt.png",confidence=self.confidence)
+        gui.click(x+width/2,y+height*6/7)
+
         time.sleep(1*self.Config["delay_times"])
         mtime = time.ctime(os.path.getmtime(self.Config["draftContentPath"]))
         self.Srt_Rolling(mtime)
