@@ -53,14 +53,15 @@ def addItem():
     gl.set("bv",bv)
     if request.args.get('p') == None:
         p = "1"
+        t = Thread(target=video_Down.down,args=(bv,))
     else:
-        p = request.args.get('p') 
+        p = request.args.get('p')
+        t = Thread(target=video_Down.down,args=(bv,p))
     p = [p] if p.isnumeric() else p.split(',')
     #如果P的请求是 1 则为 ["1"] , 若为 1,2 则为["1","2"] 返回值为list
     #更改分P使其符合规则
     Status[bv]={"bv":bv,"p":p,"status":"pending"}
     gl.set("Status",Status)
-    t = Thread(target=video_Down.down,args=(bv,p))
     t.start()
     Status[bv]["status"] = "Working"
     gl.set("Status",Status)
