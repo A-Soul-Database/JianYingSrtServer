@@ -13,6 +13,9 @@ pip install -r requirements.txt -i https://pypi.douban.com/simple/
 3.参照 `Server/componnets/position` 中的截图自行修改  
 4.运行 `flask run` 或 `py app.py`
 
+## 单独运行(不通过Web调用,仅本地)
+配置好`Config.json` 后运行 `components/single.py`
+
 ## 调用方法
 `GET` `/addItem?token=(optional)&bv=BV号&p=分P数目(1,2,3)` 执行任务    
 `GET` `/download?name=BV号.srt` 下载生成的字幕    
@@ -30,8 +33,6 @@ tscon %sessionname% /dest:console
 ```
 在远程计算机中创建
 
-#### ToDo
-[&multiplle=[["bv1",["p1","p2"]],["bv2",["p3","p4"]]](多选部署)]
 
 # License
 GPL-V3.0
