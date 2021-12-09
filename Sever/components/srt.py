@@ -47,6 +47,9 @@ class GetSrt():
         print("start parsing srt for " + path)
         #1.导入素材
         try:
+            x,y,width,height = gui.locateOnScreen("components/position/JY.png",confidence=self.confidence)
+            gui.click(x+width/2,y+height/2)
+            time.sleep(1)
             x,y,width,height = gui.locateOnScreen("components/position/add.png",confidence=self.confidence)
             gui.click(x+width/2,y+height/2)
         except:
@@ -186,8 +189,11 @@ class GetSrt():
             os.remove(self.AbsPath+'/'+i)
         logging.info("clear tmp files")
         os.system(self.Config["jianyingPath"])
-        time.sleep(5*self.Config["delay_times"])
-        x,y,width,height = gui.locateOnScreen("components/position/draftcontents.png",confidence=self.confidence)
+        time.sleep(2*self.Config["delay_times"])
+        x,y,width,height = gui.locateOnScreen("components/position/JY.png",confidence=self.confidence)
+        gui.click(x+width/2,y+height/2)
+        time.sleep(1)
+        x,y,width,height = gui.locateOnScreen("components/position/draftcontents.png",confidence=0.6)
         gui.click(x+width/2,y+height/2+100)
 
 if __name__ == "__main__":
