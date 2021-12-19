@@ -3,9 +3,9 @@ from flask import request
 from flask import render_template
 import logging
 import json
-from threading import Thread
+import _thread
 import components.video_Down as video_Down
-import components.srt as srt
+import components.ui as ui
 import components.srtParser.draft_content as draft_content
 import components.srtParser.simple_srt as simple_srt
 import sys
@@ -18,10 +18,6 @@ config = json.loads(open("./config.json","r",encoding="utf-8").read())
 Status = {}
 bv = ""
 
-
-gl.__init__()
-gl.set("Status",Status)
-gl.set("bv",bv)
 
 app = Flask(__name__)
 
@@ -50,21 +46,15 @@ def addItem():
     elif request.args.get('token') != config["token"]:
         return "token error", 403
     bv = request.args.get('bv')
-    gl.set("bv",bv)
     if request.args.get('p') == None:
         p = "1"
-        t = Thread(target=video_Down.down,args=(bv,))
+        _thread.start_new_thread(video_Down.down,(bv,p))
     else:
         p = request.args.get('p')
-        t = Thread(target=video_Down.down,args=(bv,p))
+        _thread.start_new_thread(video_Down.down,(bv,p))
     p = [p] if p.isnumeric() else p.split(',')
     #如果P的请求是 1 则为 ["1"] , 若为 1,2 则为["1","2"] 返回值为list
     #更改分P使其符合规则
-    Status[bv]={"bv":bv,"p":p,"status":"pending"}
-    gl.set("Status",Status)
-    t.start()
-    Status[bv]["status"] = "Working"
-    gl.set("Status",Status)
     #后台处理文件
     link = []
     for i in getBvs(bv,p):
@@ -90,8 +80,7 @@ def getAllSrt():
 
 @app.route('/forceKill',methods=['GET'])
 def forceKill():
-    t = Thread(target=srt.GetSrt().ClearTmp)
-    t.start()
+    _thread.start_new_thread(ui.Restart_Client,())
     return "Ok",200
 
 

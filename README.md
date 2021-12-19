@@ -1,20 +1,18 @@
 # JianYingSrtServer
 部署剪映到 Win Server 上
-
+Asdb横向课题,枝江市研究院  
 ## Support version : =>2.4.0 tested
 
-## 使用方法
+## 远程调用运行
 1.安装必要依赖
 ```bash
 pip install -r requirements.txt -i https://pypi.douban.com/simple/
 ```
-安装ffmpeg  
-2.修改 `Server/config.json` 和 `Server/components/config.json` 中的文件  
-3.参照 `Server/componnets/position` 中的截图自行修改  
-4.运行 `flask run` 或 `py app.py`
+2.修改 `config.json` 和 `components/ui.py` 中的文件  
+3.运行 `flask run` 或 `py app.py`
 
 ## 单独运行(不通过Web调用,仅本地)
-配置好`Config.json` 后运行 `components/single.py`
+配置好`components/ui.py` 中的`CONFIG`后运行 `components/single.py`
 
 ## 调用方法
 `GET` `/addItem?token=(optional)&bv=BV号&p=分P数目(1,2,3)` 执行任务    
@@ -32,7 +30,6 @@ pip install -r requirements.txt -i https://pypi.douban.com/simple/
 tscon %sessionname% /dest:console 
 ```
 在远程计算机中创建
-
 
 # License
 GPL-V3.0

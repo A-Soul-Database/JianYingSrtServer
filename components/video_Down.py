@@ -16,9 +16,9 @@ from contextlib import closing
 import logging
 import time
 import os
-import components.srt as srt
+import components.ui as ui
 class down:
-
+    VIDEO_NAME = []
     headers = {
         "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0",
         "Referer":"https://www.bilibili.com/",
@@ -30,7 +30,7 @@ class down:
         self.qn = qn
         self.path = path
         self.Video_Download(self.Get_Info())
-        srt.GetSrt().parseSrt()
+        ui.Multi_Video_Process(video_Path=os.path.abspath(os.getcwd()+"./components/tmp"),Video_Item=self.VIDEO_NAME)
 
     def Get_Info(self)->dict:
         Bili_Video_Info_Api = f"https://api.bilibili.com/x/web-interface/view?bvid={self.bv}"
@@ -59,6 +59,7 @@ class down:
 
 
     def Video_Download(self,infos:dict)->bool:
+        self.VIDEO_NAME
         result = False
         formats = "mp4" if self.qn == "16" else "flv"
         p = 1
@@ -70,6 +71,7 @@ class down:
             p+=1
             Video_Name = f"{name}.{formats}"
             #print(Video_Name)
+            self.VIDEO_NAME.append(Video_Name)
             result = self.Download(Video_Durl,Video_Name)
             
         return result
