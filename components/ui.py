@@ -221,7 +221,7 @@ def Single_Operation(stage:int=1)->int:
         #删除轨道中的字幕
         auto.Click(Buttom_Half_Window_Position.xcenter(),Buttom_Half_Window_Position.ycenter(),waitTime=0.5)
         auto.SendKeys("{Ctrl}A",waitTime=2)
-        auto.SendKeys("{Backspace}",waitTime=2)
+        auto.PressKey(8,waitTime=2)
         #auto.PressKey(46,waitTime=2)
 
     if stage==1:
@@ -268,7 +268,7 @@ def Multi_Video_Process(video_Path:str=os.path.abspath(CONFIG["Video_Path"]),Vid
 if __name__ == "__main__":
     from srtParser import draft_content as draft_content
     from srtParser import simple_srt as simple_srt
-    Multi_Video_Process()
+    Single_Operation(3)
 else:
     from components.srtParser import draft_content as draft_content
     from components.srtParser import simple_srt as simple_srt

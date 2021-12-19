@@ -17,6 +17,7 @@ import logging
 import time
 import os
 import components.ui as ui
+import components.global_var as gl
 class down:
     VIDEO_NAME = []
     headers = {

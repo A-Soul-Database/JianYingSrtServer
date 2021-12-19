@@ -15,13 +15,13 @@ sys.path.append("..")
 sys.path.append("./components")
 config = json.loads(open("./config.json","r",encoding="utf-8").read())
 
-Status = {}
+gl.set("event",[])
 bv = ""
 
 
 app = Flask(__name__)
 
-logging.basicConfig(filename='app.log', level=logging.INFO)
+#logging.basicConfig(filename='app.log', level=logging.INFO)
 
 def getBvs(bv,p:list)->list:
     #格式化bv和p的文件名
@@ -33,7 +33,7 @@ def getBvs(bv,p:list)->list:
 @app.route('/',methods = ['GET'])
 def give_stastic():
     #访问主页会查看队列,即Status
-    return render_template('index.html',status=str(Status)),200
+    return render_template('index.html',status=str(gl.get('event'))),200
 
 
 @app.route('/addItem',methods=["GET"])
