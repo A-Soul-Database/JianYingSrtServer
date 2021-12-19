@@ -89,15 +89,14 @@ def LocateStatus()->int:
         return 1
         #说明在主页面
 
-def Restart_Client(isClearTmp:bool=True,isReopen:bool=True):
+def Restart_Client(isReopen:bool=True):
     """
         重启剪映客户端
             isClearTmp : 是否清理缓存
             isReopen: 是否重新启动
     """
     os.system('%s%s' % ("taskkill /F /IM ","JianYingPro.exe"))
-    if isClearTmp:
-        pass
+
     if isReopen:
         os.system(CONFIG["JianYing_Exe_Path"])
 
