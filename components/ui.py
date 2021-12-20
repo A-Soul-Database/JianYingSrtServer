@@ -64,6 +64,9 @@ def classname_include(WindowObj:Control,SubControlType:str,ClassName:str="",Name
             index_Found += 1
     return 0
 
+def LocateStatusProxy()->int:
+    with auto.UIAutomationInitializerInThread(debug=True):
+        return LocateStatus()
 def LocateStatus()->int:
     """
         确定现在的状态
@@ -249,7 +252,7 @@ def Multi_Video_Process(video_Path:str=os.path.abspath(CONFIG["Video_Path"]),Vid
     if len(Video_Item):
         Video_List = Video_Item
     else:
-        Video_List = [fn for fn in os.listdir(VIDEO_PATH) if any(fn.endswith(format) for format in ['.mp4','.avi','.mkv','.mov'])]
+        Video_List = [fn for fn in os.listdir(VIDEO_PATH) if any(fn.endswith(format) for format in ['.mp4','.avi','.mkv','.mov','.flv'])]
 
     for Video_Item in Video_List:
         if os.path.exists(VIDEO_PATH+"/"+Video_Item.split(".")[0]+".srt"):
@@ -267,7 +270,7 @@ def Multi_Video_Process(video_Path:str=os.path.abspath(CONFIG["Video_Path"]),Vid
 if __name__ == "__main__":
     from srtParser import draft_content as draft_content
     from srtParser import simple_srt as simple_srt
-    Single_Operation(3)
+    Multi_Video_Process()
 else:
     from components.srtParser import draft_content as draft_content
     from components.srtParser import simple_srt as simple_srt

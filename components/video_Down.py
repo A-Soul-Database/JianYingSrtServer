@@ -17,7 +17,7 @@ import logging
 import time
 import os
 import components.ui as ui
-import components.global_var as gl
+
 class down:
     VIDEO_NAME = []
     headers = {
@@ -31,7 +31,7 @@ class down:
         self.qn = qn
         self.path = path
         self.Video_Download(self.Get_Info())
-        ui.Multi_Video_Process(video_Path=os.path.abspath(os.getcwd()+"./components/tmp"),Video_Item=self.VIDEO_NAME)
+        ui.Multi_Video_Process(video_Path=os.path.abspath(os.getcwd()+"./components/tmp"),Video_Item=self.VIDEO_NAME) #默认从外部调用了
 
     def Get_Info(self)->dict:
         Bili_Video_Info_Api = f"https://api.bilibili.com/x/web-interface/view?bvid={self.bv}"
