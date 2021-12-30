@@ -38,3 +38,4 @@ tscon %sessionname% /dest:console
 GPL-V3.0
 # Libirary
 [Jianying-to-srt](https://github.com/YDX-2147483647/Jianying-to-srt) MIT License
+[UiAutomation](https://github.com/yinkaisheng/Python-UIAutomation-for-Windows)  Apache-2.0 License 
