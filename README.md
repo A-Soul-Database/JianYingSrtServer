@@ -1,7 +1,7 @@
 # JianYingSrtServer
 部署剪映到 Win Server 上
 
-## Support version : =>2.4.0 tested
+## Support version : =>2.5.1 tested
 
 
 1.安装必要依赖
