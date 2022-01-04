@@ -1,6 +1,6 @@
 # Develop Announcement 开发公告
 Asdb 技术栈已经切换为基于 [GithubActionsGui](https://github.com/A-Soul-Database/ActionsGui) 的字幕转换工具. 该版本的 **Web端，停止维护。但是ui.py及点击脚本将会作为ActionsGui的函数继续维护**
-
+需要相关服务，请使用 [GithubActionsGui](https://github.com/A-Soul-Database/ActionsGui)
 
 # JianYingSrtServer
 部署剪映到 Win Server 上
