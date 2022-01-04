@@ -1,3 +1,7 @@
+# Develop Announcement 开发公告
+Asdb 技术栈已经切换为基于 [GithubActionsGui](https://github.com/A-Soul-Database/ActionsGui) 的字幕转换工具. 该版本的 **Web端，停止维护。但是ui.py及点击脚本将会作为ActionsGui的函数继续维护**
+
+
 # JianYingSrtServer
 部署剪映到 Win Server 上
 
@@ -10,7 +14,7 @@ pip install -r requirements.txt -i https://pypi.douban.com/simple/
 ```
 2.修改 `config.json` 和 `components/ui.py` 中的文件  
 
-## 远程调用运行
+## 远程调用运行 (不推荐 Departed)
 
 运行 `flask run` 或 `py app.py`
 
