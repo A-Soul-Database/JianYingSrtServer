@@ -1,15 +1,14 @@
 # coding=utf-8
 """
-    剪映 Srt Parser uiautomation Version 
+    剪映 Srt Parser uiautomation Version For Github Actions
+    Version 2.0.0-alpha-Actions
     @PPPPP
         以某些特征确定窗口(不能以类名确定)
         请注意中英文输入法切换问题
-        For Asdb 字幕转换
-
-
-        to do : 没有删除原来文件的时候
+        For Asdb 字幕转换 On Acions
+    
+    Fit version for Jianying 2.6.0
 """
-from requests.api import delete
 import uiautomation as auto
 from uiautomation.uiautomation import Control
 import time
@@ -17,14 +16,29 @@ import os
 import keyboard
 import _thread
 
+global PROCESSING
+
 VIDEO_PATH = ""
 VIDEO_ITEM = "" 
 
 CONFIG = {
-    "draft_content_directory":"xxx\\draft_content.json", #剪映草稿文件地址(结尾为draft_content.json)
-    "JianYing_Exe_Path":"xxx\\JianyingPro.exe",
-    "Video_Path":"./tmp" #default
+    "draft_content_directory":"",  #剪映草稿文件地址(结尾为draft_content.json)
+    "JianYing_Exe_Path":"",  #剪映客户端路径
+    "Video_Path":"./tmp", #default
+    "Delay_Times":1
 }
+
+targetPath = os.popen("whoami").read().replace("\n","").split("\\")[1]
+targetPath,draft_Path = f'C:\\Users\\{targetPath}\\AppData\\Local\\JianyingPro\\Apps',f'C:\\Users\\{targetPath}\\AppData\\Local\\JianyingPro\\User Data\Projects\com.lveditor.draft\\'
+def Path_init():
+    for i in os.listdir(draft_Path):
+        if i.count(".") == 0:
+            CONFIG["draft_content_directory"] = os.path.join(draft_Path,i+"\\draft_content.json")
+            CONFIG["JianYing_Exe_Path"] = os.path.join(targetPath,"JianYingPro.exe")
+
+    os.system(f"echo {CONFIG}")
+
+
 
 def Thread_Access_Multi(video_Path:str=os.path.abspath(CONFIG["Video_Path"]),Video_Item:list=[]):
     with auto.UIAutomationInitializerInThread(debug=True):
@@ -65,8 +79,10 @@ def classname_include(WindowObj:Control,SubControlType:str,ClassName:str="",Name
     return 0
 
 def LocateStatusProxy()->int:
+    """外部调用Locate()函数 (多线程) 需要通过代理"""
     with auto.UIAutomationInitializerInThread(debug=True):
         return LocateStatus()
+
 def LocateStatus()->int:
     """
         确定现在的状态
@@ -77,6 +93,7 @@ def LocateStatus()->int:
     """
     if auto.WindowControl(Name="JianyingPro",searchDepth=1).Exists(maxSearchSeconds=0.1)==False:
         #没有窗口说明没有启动剪映客户端,return -1
+        Restart_Client()
         return -1
     else:
         UnkownWindow = auto.WindowControl(Name="JianyingPro",searchDepth=1)
@@ -98,8 +115,8 @@ def Restart_Client(isReopen:bool=True):
             isClearTmp : 是否清理缓存
             isReopen: 是否重新启动
     """
-    os.system('%s%s' % ("taskkill /F /IM ","JianYingPro.exe"))
-
+    os.system('%s%s' % ("taskkill /F /T /IM ","JianYingPro.exe"))
+    time.sleep(1)
     if isReopen:
         os.system(CONFIG["JianYing_Exe_Path"])
 
@@ -109,7 +126,7 @@ def into_Main_Window():
     """
 
     if LocateStatus() != 0:
-        raise Exception("未进入主页面")
+        os.system("echo Not In Main Page")
 
     Intro_window = auto.WindowControl(Name="JianyingPro",searchDepth=1)
     Intro_window.SetTopmost(True)
@@ -132,15 +149,16 @@ def Single_Operation(stage:int=1)->int:
 
     #判断是否在主界面
     if LocateStatus() != 1:
-        print("未进入主页面,尝试重启")
+        print("Not in the main page, Restarting")
         Restart_Client()
-        time.sleep(3)
+        time.sleep(5)
         into_Main_Window()
-        return Single_Operation()
+        return Single_Operation(stage)
     #### 定义一些Position
     Main_Window = auto.WindowControl(Name="JianyingPro", searchDepth=1)
-    Main_Window.ShowWindow(3,waitTime=1)
+    Main_Window.ShowWindow(3,waitTime=CONFIG["Delay_Times"])
     Main_Window.SetTopmost(True)
+    Main_Window.SetTopmost(False)
     #置顶锁,确保元素正常被点击
 
     Top_Half_Window = Main_Window.PaneControl(searchDepth=1,foundIndex=classname_include(WindowObj=Main_Window,SubControlType="PaneControl",ClassName="SplitView")).PaneControl(searchDepth=1)
@@ -165,7 +183,7 @@ def Single_Operation(stage:int=1)->int:
         Current_Progress_Position = Top_Half_Window.TextControl(Name="currentProgress", searchDepth=1).BoundingRectangle
 
         delete_media()
-        auto.Click(x=int(ScroolBar_Position.left+(Current_Progress_Position.left-ScroolBar_Position.left)/2), y=ScroolBar_Position.ycenter(),waitTime=0.5) #尝试点击添加文件
+        auto.Click(x=int(ScroolBar_Position.left+(Current_Progress_Position.left-ScroolBar_Position.left)/2), y=ScroolBar_Position.ycenter(),waitTime=CONFIG["Delay_Times"]*2) #尝试点击添加文件
 
         ##########################
         #########添加文件#########
@@ -175,13 +193,15 @@ def Single_Operation(stage:int=1)->int:
         Title_width = Media_Window.TitleBarControl(searchDepth=1).BoundingRectangle.width()
         Title_bottom = Media_Window.TitleBarControl(searchDepth=1).BoundingRectangle.bottom
         Content_Window_top = Media_Window.PaneControl(ClassName="DUIViewWndClassName",searchDepth=1).BoundingRectangle.top
-        auto.Click(x=int(Title_x+Title_width*3/5),y=int((Title_bottom+Content_Window_top)/2),waitTime=0.5)#点击路径选择框
+        auto.Click(x=int(Title_x+Title_width*3/5),y=int((Title_bottom+Content_Window_top)/2),waitTime=CONFIG["Delay_Times"])#点击路径选择框
         auto.SendKeys(VIDEO_PATH)
         auto.PressKey(13)#按下回车键
         Media_Window.PaneControl(searchDepth=1,foundIndex=classname_include(WindowObj=Media_Window,SubControlType="PaneControl",ClassName="ComboBox")).SendKeys(VIDEO_ITEM)
         #点击文件筐输入
-        Media_Window.ButtonControl(searchDepth=1).Click()#打开媒体
-        auto.DragDrop(x1=Media_Item[0],y1=Media_Item[1],x2=Buttom_Half_Window_Position.xcenter(),y2=Buttom_Half_Window_Position.ycenter(),waitTime=0.5)
+        #Media_Window.ButtonControl(searchDepth=1).Click()#打开媒体
+        auto.SendKeys("{Alt}O",waitTime=CONFIG["Delay_Times"])#按下回车键
+        time.sleep(CONFIG["Delay_Times"]*5)
+        auto.DragDrop(x1=Media_Item[0],y1=Media_Item[1],x2=Buttom_Half_Window_Position.xcenter(),y2=Buttom_Half_Window_Position.ycenter(),waitTime=CONFIG["Delay_Times"]*2)
 
     def srt_identify():
         """
@@ -194,12 +214,14 @@ def Single_Operation(stage:int=1)->int:
         #点击智能字幕
         Top_Half_Window.TextControl(searchDepth=1,foundIndex=classname_include(WindowObj=Top_Half_Window,SubControlType="TextControl",Name="智能字幕")).Click()
         Unkown_Button = Top_Half_Window.TextControl(searchDepth=1,foundIndex=classname_include(WindowObj=Top_Half_Window,SubControlType="TextControl",Name="识别歌词")).BoundingRectangle
-        auto.Click(x=int(Unkown_Button.xcenter()+Unkown_Button.width()*2),y=int(Unkown_Button.bottom),waitTime=0.5)
-        auto.Click(x=int(Unkown_Button.xcenter()+Unkown_Button.width()*2),y=int(Unkown_Button.bottom+Unkown_Button.height()*2),waitTime=0.5)
+        auto.Click(x=int(Unkown_Button.xcenter()+Unkown_Button.width()*2),y=int(Unkown_Button.bottom),waitTime=CONFIG["Delay_Times"])
+        auto.Click(x=int(Unkown_Button.xcenter()+Unkown_Button.width()*2),y=int(Unkown_Button.bottom+Unkown_Button.height()*2),waitTime=CONFIG["Delay_Times"])
+        last_time = os.path.getmtime(CONFIG["draft_content_directory"])
         while 1:
             #等待识别完成
             time.sleep(5)
-            if LocateStatus() == 1:
+            os.system("echo Waiting for recognition to complete")
+            if os.path.getmtime(CONFIG["draft_content_directory"]) != last_time:
                 break
         tracks = draft_content.read_draft_content_src(CONFIG["draft_content_directory"])
         if __name__ == "__main__":
@@ -221,9 +243,9 @@ def Single_Operation(stage:int=1)->int:
             Main_Window.WindowControl(searchDepth=1,foundIndex=classname_include(WindowObj=Main_Window,SubControlType="WindowControl",ClassName="VEToastWindow")).GroupControl(searchDepth=1).Click()#删除文件
 
         #删除轨道中的字幕
-        auto.Click(Buttom_Half_Window_Position.xcenter(),Buttom_Half_Window_Position.ycenter(),waitTime=0.5)
-        auto.SendKeys("{Ctrl}A",waitTime=2)
-        auto.PressKey(8,waitTime=2)
+        auto.Click(Buttom_Half_Window_Position.xcenter(),Buttom_Half_Window_Position.ycenter(),waitTime=CONFIG["Delay_Times"])
+        auto.SendKeys("{Ctrl}A",waitTime=CONFIG["Delay_Times"])
+        auto.PressKey(8,waitTime=CONFIG["Delay_Times"])
         #auto.PressKey(46,waitTime=2)
 
     if stage==1:
@@ -242,11 +264,17 @@ def Single_Operation(stage:int=1)->int:
 def Multi_Video_Process(video_Path:str=os.path.abspath(CONFIG["Video_Path"]),Video_Item:list=[]):
     """
         多媒体文件使用 自动扫描目录下所有媒体文件
+        目录配置:  CONFIG["Video_Path"]
     """
     global VIDEO_PATH,VIDEO_ITEM
     VIDEO_PATH = video_Path
     def convert_to_m4a(filename)->str:
-        os.system(f"ffmpeg -y -i {VIDEO_PATH}/{filename} -vn -codec copy {VIDEO_PATH}/{filename.split('.')[0]}.m4a")
+        """转换视频为m4a 文件以排除码率问题"""
+        try:
+            os.system(f"ffmpeg -y -loglevel error -i {VIDEO_PATH}/{filename} -vn -codec copy {VIDEO_PATH}/{filename.split('.')[0]}.m4a")
+        except:
+            os.system(f".\\ffmpeg.exe -y -loglevel error -i {VIDEO_PATH}/{filename} -vn -codec copy {VIDEO_PATH}/{filename.split('.')[0]}.m4a") 
+            #Choose local ffmpeg.exe
         return f"{filename.split('.')[0]}.m4a"
 
     if len(Video_Item):
@@ -257,15 +285,25 @@ def Multi_Video_Process(video_Path:str=os.path.abspath(CONFIG["Video_Path"]),Vid
     for Video_Item in Video_List:
         if os.path.exists(VIDEO_PATH+"/"+Video_Item.split(".")[0]+".srt"):
             #说明已经转换过了
-            print(f"{Video_Item} 已经转换过了,Skipped")
+            print(f"{Video_Item} Has Parsed, Skip")
             continue
         VIDEO_ITEM = convert_to_m4a(Video_Item)
-        try:
-            with auto.UIAutomationInitializerInThread(debug=True):
+
+        
+        Tried_times = 0
+        with auto.UIAutomationInitializerInThread(debug=True):
+            result = Single_Operation()
+            while result!= 0:
+                Restart_Client()
                 result = Single_Operation()
-        except Exception as e:
-            result = e
-        print(f"{Video_Item} 处理结果为 {result} (0表示成功)")
+                if result == 0 or Tried_times>3:
+                    break
+                Tried_times += 1
+            process_result = True if result == 0 else False
+        os.system(f"echo {Video_Item} with result  {result} (0 represents success)")
+
+    return process_result
+
 
 if __name__ == "__main__":
     from srtParser import draft_content as draft_content
